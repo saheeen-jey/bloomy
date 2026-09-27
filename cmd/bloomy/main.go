@@ -40,6 +40,7 @@ func main() {
 	fmt.Printf("loaded %d words (m=%d bits, k=%d hashes, est. false positive rate %.4f%%)\n\n",
 		len(words), f.M(), f.K(), f.EstimatedFalsePositiveRate()*100)
 
+	absent := false
 	for _, w := range strings.Split(*checkWords, ",") {
 		w = strings.TrimSpace(w)
 		if w == "" {
@@ -49,7 +50,11 @@ func main() {
 			fmt.Printf("  %-20s -> possibly in set\n", w)
 		} else {
 			fmt.Printf("  %-20s -> definitely NOT in set\n", w)
+			absent = true
 		}
+	}
+	if absent {
+		os.Exit(1)
 	}
 }
 

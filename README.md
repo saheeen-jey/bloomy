@@ -78,3 +78,6 @@ Omit `-wordlist`, or set it to `-`, to read the wordlist from standard input:
 ```bash
 cat examples/wordlist.txt | go run ./cmd/bloomy -check "apple,pineapple,banana"
 ```
+
+The CLI exits with status `1` if any checked word is definitely absent, and
+status `0` when all checked words are possibly present.
