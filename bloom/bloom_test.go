@@ -123,6 +123,24 @@ func TestClear(t *testing.T) {
 	}
 }
 
+func TestCopy(t *testing.T) {
+	original := NewWithEstimates(100, 0.01)
+	original.Add([]byte("original"))
+	copyFilter := original.Copy()
+
+	if copyFilter.M() != original.M() || copyFilter.K() != original.K() || copyFilter.Count() != original.Count() {
+		t.Fatal("expected copy to preserve filter metadata")
+	}
+	copyFilter.Add([]byte("copy-only"))
+	if original.Test([]byte("copy-only")) {
+		t.Error("expected mutations to the copy not to affect the original")
+	}
+	original.Add([]byte("original-only"))
+	if copyFilter.Test([]byte("original-only")) {
+		t.Error("expected mutations to the original not to affect the copy")
+	}
+}
+
 func BenchmarkAdd(b *testing.B) {
 	for _, size := range []int{100, 100000} {
 		b.Run(fmt.Sprintf("%d-items", size), func(b *testing.B) {

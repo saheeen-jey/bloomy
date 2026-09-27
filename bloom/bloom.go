@@ -140,6 +140,18 @@ func (f *Filter) Clear() {
 	f.count = 0
 }
 
+// Copy returns an independent deep copy of the filter.
+func (f *Filter) Copy() *Filter {
+	bits := make([]uint64, len(f.bits))
+	copy(bits, f.bits)
+	return &Filter{
+		bits:  bits,
+		m:     f.m,
+		k:     f.k,
+		count: f.count,
+	}
+}
+
 func (f *Filter) setBit(pos uint) {
 	f.bits[pos/64] |= 1 << (pos % 64)
 }
