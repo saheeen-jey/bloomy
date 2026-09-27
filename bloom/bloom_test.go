@@ -141,6 +141,16 @@ func TestCopy(t *testing.T) {
 	}
 }
 
+func TestString(t *testing.T) {
+	f := New(230, 7)
+	f.Add([]byte("one"))
+	f.Add([]byte("two"))
+
+	if got, want := f.String(), "Filter{m=230, k=7, count=2}"; got != want {
+		t.Errorf("String() = %q, want %q", got, want)
+	}
+}
+
 func BenchmarkAdd(b *testing.B) {
 	for _, size := range []int{100, 100000} {
 		b.Run(fmt.Sprintf("%d-items", size), func(b *testing.B) {

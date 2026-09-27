@@ -8,6 +8,7 @@ package bloom
 
 import (
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"math"
 )
@@ -150,6 +151,11 @@ func (f *Filter) Copy() *Filter {
 		k:     f.k,
 		count: f.count,
 	}
+}
+
+// String returns a concise description of the filter.
+func (f *Filter) String() string {
+	return fmt.Sprintf("Filter{m=%d, k=%d, count=%d}", f.m, f.k, f.count)
 }
 
 func (f *Filter) setBit(pos uint) {
