@@ -7,6 +7,7 @@
 package bloom
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"hash/fnv"
@@ -156,6 +157,49 @@ func (f *Filter) Copy() *Filter {
 // String returns a concise description of the filter.
 func (f *Filter) String() string {
 	return fmt.Sprintf("Filter{m=%d, k=%d, count=%d}", f.m, f.k, f.count)
+}
+
+// MarshalBinary encodes the filter into a binary representation.
+func (f *Filter) MarshalBinary() ([]byte, error) {
+	const headerSize = 32
+	data := make([]byte, headerSize+len(f.bits)*8)
+	binary.LittleEndian.PutUint64(data[0:8], uint64(f.m))
+	binary.LittleEndian.PutUint64(data[8:16], uint64(f.k))
+	binary.LittleEndian.PutUint64(data[16:24], f.count)
+	binary.LittleEndian.PutUint64(data[24:32], uint64(len(f.bits)))
+	for i, word := range f.bits {
+		binary.LittleEndian.PutUint64(data[headerSize+i*8:], word)
+	}
+	return data, nil
+}
+
+// UnmarshalBinary decodes a filter previously encoded by MarshalBinary.
+func (f *Filter) UnmarshalBinary(data []byte) error {
+	const headerSize = 32
+	if len(data) < headerSize {
+		return errors.New("bloom: invalid binary data")
+	}
+
+	m := binary.LittleEndian.Uint64(data[0:8])
+	k := binary.LittleEndian.Uint64(data[8:16])
+	count := binary.LittleEndian.Uint64(data[16:24])
+	numWords := binary.LittleEndian.Uint64(data[24:32])
+	if m == 0 || k == 0 || numWords != uint64((m+63)/64) {
+		return errors.New("bloom: invalid filter metadata")
+	}
+	if numWords > uint64((len(data)-headerSize)/8) || headerSize+int(numWords)*8 != len(data) {
+		return errors.New("bloom: invalid binary data length")
+	}
+
+	bits := make([]uint64, numWords)
+	for i := range bits {
+		bits[i] = binary.LittleEndian.Uint64(data[headerSize+i*8:])
+	}
+	f.m = uint(m)
+	f.k = uint(k)
+	f.count = count
+	f.bits = bits
+	return nil
 }
 
 func (f *Filter) setBit(pos uint) {

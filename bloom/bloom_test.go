@@ -151,6 +151,30 @@ func TestString(t *testing.T) {
 	}
 }
 
+func TestBinaryRoundTrip(t *testing.T) {
+	original := NewWithEstimates(100, 0.01)
+	for _, item := range []string{"apple", "banana", "cherry"} {
+		original.Add([]byte(item))
+	}
+
+	data, err := original.MarshalBinary()
+	if err != nil {
+		t.Fatalf("MarshalBinary returned unexpected error: %v", err)
+	}
+	restored := New(1, 1)
+	if err := restored.UnmarshalBinary(data); err != nil {
+		t.Fatalf("UnmarshalBinary returned unexpected error: %v", err)
+	}
+	if restored.M() != original.M() || restored.K() != original.K() || restored.Count() != original.Count() {
+		t.Fatal("expected restored filter metadata to match original")
+	}
+	for _, item := range []string{"apple", "banana", "cherry"} {
+		if !restored.Test([]byte(item)) {
+			t.Errorf("expected restored filter to contain %q", item)
+		}
+	}
+}
+
 func BenchmarkAdd(b *testing.B) {
 	for _, size := range []int{100, 100000} {
 		b.Run(fmt.Sprintf("%d-items", size), func(b *testing.B) {

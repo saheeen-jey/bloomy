@@ -52,6 +52,19 @@ merged := bloom.NewWithEstimates(10000, 0.01)
 _ = merged.Union(otherFilter)
 ```
 
+### Persistence
+
+Filters can be saved and loaded using the standard `encoding` interfaces:
+
+```go
+data, _ := filter.MarshalBinary()
+_ = os.WriteFile("filter.bin", data, 0600)
+
+data, _ = os.ReadFile("filter.bin")
+loaded := bloom.New(1, 1)
+_ = loaded.UnmarshalBinary(data)
+```
+
 ## CLI demo
 
 The `cmd/bloomy` binary loads a newline-delimited wordlist into a filter and checks a comma-separated list of words against it:
