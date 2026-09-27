@@ -106,3 +106,38 @@ func TestEmptyFilterNeverMatches(t *testing.T) {
 		t.Error("expected empty filter to report nothing as present")
 	}
 }
+
+func BenchmarkAdd(b *testing.B) {
+	for _, size := range []int{100, 100000} {
+		b.Run(fmt.Sprintf("%d-items", size), func(b *testing.B) {
+			items := make([][]byte, size)
+			for i := range items {
+				items[i] = []byte(fmt.Sprintf("item-%d", i))
+			}
+
+			f := NewWithEstimates(uint(size), 0.01)
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				f.Add(items[i%size])
+			}
+		})
+	}
+}
+
+func BenchmarkTest(b *testing.B) {
+	for _, size := range []int{100, 100000} {
+		b.Run(fmt.Sprintf("%d-items", size), func(b *testing.B) {
+			items := make([][]byte, size)
+			f := NewWithEstimates(uint(size), 0.01)
+			for i := range items {
+				items[i] = []byte(fmt.Sprintf("item-%d", i))
+				f.Add(items[i])
+			}
+
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				f.Test(items[i%size])
+			}
+		})
+	}
+}
