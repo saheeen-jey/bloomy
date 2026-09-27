@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -19,8 +20,8 @@ func main() {
 	fpRate := flag.Float64("fp", 0.01, "target false positive rate")
 	flag.Parse()
 
-	if *wordlistPath == "" || *checkWords == "" {
-		fmt.Fprintln(os.Stderr, `usage: bloomy -wordlist words.txt -check "word1,word2,word3"`)
+	if *checkWords == "" {
+		fmt.Fprintln(os.Stderr, `usage: bloomy [-wordlist words.txt] -check "word1,word2,word3"`)
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -53,14 +54,20 @@ func main() {
 }
 
 func readLines(path string) ([]string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
+	var reader io.Reader = os.Stdin
+	var file *os.File
+	if path != "" && path != "-" {
+		var err error
+		file, err = os.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+		reader = file
 	}
-	defer file.Close()
 
 	var lines []string
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line != "" {

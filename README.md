@@ -72,3 +72,9 @@ The `cmd/bloomy` binary loads a newline-delimited wordlist into a filter and che
 ```bash
 go run ./cmd/bloomy -wordlist examples/wordlist.txt -check "apple,pineapple,banana"
 ```
+
+Omit `-wordlist`, or set it to `-`, to read the wordlist from standard input:
+
+```bash
+cat examples/wordlist.txt | go run ./cmd/bloomy -check "apple,pineapple,banana"
+```
