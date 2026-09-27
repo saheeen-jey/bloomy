@@ -107,6 +107,22 @@ func TestEmptyFilterNeverMatches(t *testing.T) {
 	}
 }
 
+func TestClear(t *testing.T) {
+	f := NewWithEstimates(100, 0.01)
+	f.Add([]byte("present"))
+	if !f.Test([]byte("present")) {
+		t.Fatal("expected added item to be present before clear")
+	}
+
+	f.Clear()
+	if f.Count() != 0 {
+		t.Errorf("expected count to be reset, got %d", f.Count())
+	}
+	if f.Test([]byte("present")) {
+		t.Error("expected cleared filter to report nothing as present")
+	}
+}
+
 func BenchmarkAdd(b *testing.B) {
 	for _, size := range []int{100, 100000} {
 		b.Run(fmt.Sprintf("%d-items", size), func(b *testing.B) {

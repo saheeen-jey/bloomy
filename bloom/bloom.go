@@ -132,6 +132,14 @@ func (f *Filter) K() uint { return f.k }
 // distinct items, not an exact count.
 func (f *Filter) Count() uint64 { return f.count }
 
+// Clear removes all items from the filter without reallocating its bit array.
+func (f *Filter) Clear() {
+	for i := range f.bits {
+		f.bits[i] = 0
+	}
+	f.count = 0
+}
+
 func (f *Filter) setBit(pos uint) {
 	f.bits[pos/64] |= 1 << (pos % 64)
 }
